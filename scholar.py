@@ -359,7 +359,7 @@ class ScholarArticleParser(object):
         content as needed, and notifies the parser instance of
         resulting instances via the handle_article callback.
         """
-        self.soup = BeautifulSoup(html)
+        self.soup = BeautifulSoup(html, "html.parser")
 
         # This parses any global, non-itemized attributes from the page.
         self._parse_globals()
@@ -945,7 +945,7 @@ class ScholarQuerier(object):
         # Now parse the required stuff out of the form. We require the
         # "scisig" token to make the upload of our settings acceptable
         # to Google.
-        soup = BeautifulSoup(html)
+        soup = self.soup = BeautifulSoup(html, "html.parser")
 
         tag = soup.find(name='form', attrs={'id': 'gs_settings_form'})
         if tag is None:
@@ -1095,19 +1095,22 @@ def txt(querier, with_globals):
 
     articles = querier.articles
     for art in articles:
-        print(encode(art.as_txt()) + '\n')
+        print((art.as_txt() + '\n').encode("UTF-8"))
 
 def csv(querier, header=False, sep='|'):
     articles = querier.articles
     for art in articles:
         result = art.as_csv(header=header, sep=sep)
-        print(encode(result))
+        print(result.encode("UTF-8"))
         header = False
 
 def citation_export(querier):
     articles = querier.articles
     for art in articles:
-        print(art.as_citation() + '\n')
+        try:
+            print(art.as_citation().decode())
+        except:
+            print(art.as_citation().decode("utf-8").encode('cp850','replace').decode('cp850') + '\n')
 
 
 def main():
